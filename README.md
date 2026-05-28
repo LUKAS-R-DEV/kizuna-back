@@ -169,7 +169,6 @@ KIZUNA/
 ├── kizuna-audit-service/
 ├── kizuna_notification_service/
 ├── kizuna-ai-service/
-├── frontend/              # React + Vite (dev e build Docker)
 ├── docker-compose.yml       # projeto kizuna (stack completo)
 ├── docker-compose.dev.yml   # projeto kizuna_dev (só infra)
 ├── .env.dev
