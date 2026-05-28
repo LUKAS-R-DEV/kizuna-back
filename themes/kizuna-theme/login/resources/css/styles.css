@@ -1,0 +1,292 @@
+/* KIZUNA INDUSTRIAL THEME - REVISÃO FINAL 2026
+   Focado em: Estabilidade de layout, inputs modernos e fidelidade ao design.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --kizuna-red: #e1251b;
+    --kizuna-red-hover: #c11f17;
+    --bg-dark: #050505;
+    --bg-glow: #1a0505;
+    --text-main: #1e293b;
+    --text-muted: #94a3b8;
+    --input-bg: #f8fafc;
+    --border-color: #e2e8f0;
+}
+
+/* 1. ESTRUTURA E FUNDO */
+#keycloak-bg, .login-pf body {
+    background: radial-gradient(circle, var(--bg-glow) 0%, var(--bg-dark) 100%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Limpeza de grids do PatternFly */
+.pf-v5-c-login, .pf-v5-c-login__container {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+}
+
+/* 2. O CARD PRINCIPAL */
+.pf-v5-c-login__main {
+    background-color: #ffffff !important;
+    border-radius: 28px !important;
+    padding: 3.5rem 2.8rem !important;
+    box-shadow: 0 25px 60px -15px rgba(0,0,0,0.7) !important;
+    width: 440px !important; /* Largura expandida */
+    max-width: 90vw !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: auto !important;
+    border: none !important;
+}
+
+/* 3. CABEÇALHO (Título e Subtítulo) */
+.pf-v5-c-login__main-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin-bottom: 2.5rem !important;
+    padding: 0 !important;
+}
+
+.kizuna-brand {
+    color: var(--kizuna-red) !important;
+    font-weight: 900 !important;
+    font-size: 1.15rem !important;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem !important;
+}
+
+.pf-v5-c-title {
+    color: #111827 !important;
+    font-weight: 800 !important;
+    font-size: 1.85rem !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
+
+.pf-v5-c-login__main-header::after {
+    content: "ACCESS THE PLATFORM";
+    display: block !important;
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-top: 1.2rem !important;
+}
+
+/* 4. INPUTS ESTILIZADOS COM ÍCONES */
+/* Quando o controle for um envelopador Span (como no login) */
+span.pf-v5-c-form-control {
+    border: 1.5px solid #e2e8f0 !important;
+    background-color: #f8fafc !important;
+    border-radius: 14px !important;
+    height: 3.8rem !important;
+    font-size: 0.95rem !important;
+    color: var(--text-main) !important;
+    box-shadow: none !important;
+    background-image: none !important; /* Remove linha preta do PatternFly */
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important; /* O padding vai no input agora */
+    overflow: hidden !important;
+}
+
+span.pf-v5-c-form-control:focus-within {
+    border-color: #e1251b !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(225, 37, 27, 0.1) !important;
+}
+
+span.pf-v5-c-form-control input {
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding-left: 3.8rem !important; /* Espaço para o ícone ampliado */
+    padding-right: 1rem !important;
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: 0.95rem !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+span.pf-v5-c-form-control input:focus,
+span.pf-v5-c-form-control input:focus-visible,
+span.pf-v5-c-form-control input:active {
+    outline: none !important;
+    outline-offset: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Quando o controle for o próprio Input (como em Esqueceu a Senha) */
+input.pf-v5-c-form-control {
+    border: 1.5px solid #e2e8f0 !important;
+    background-color: #f8fafc !important;
+    border-radius: 14px !important;
+    height: 3.8rem !important;
+    padding-left: 3.8rem !important; /* Espaço para o ícone ampliado */
+    padding-right: 1rem !important;
+    font-size: 0.95rem !important;
+    color: var(--text-main) !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    transition: all 0.2s ease !important;
+}
+
+input.pf-v5-c-form-control:focus,
+input.pf-v5-c-form-control:focus-visible {
+    border-color: #e1251b !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(225, 37, 27, 0.1) !important;
+    outline: none !important;
+}
+
+/* Ícone de Email/Usuário */
+input#username, input[name="username"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' /%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: 1.3rem center !important;
+    background-size: 1.3rem !important;
+}
+
+/* Ícone de Cadeado */
+input#password, input[name="password"], input#password-new, input[name="password-new"], input#password-confirm, input[name="password-confirm"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' /%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: 1.3rem center !important;
+    background-size: 1.3rem !important;
+}
+
+/* 5. CHECKBOX E LINKS */
+#kc-form-options {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin: 0.8rem 0 !important;
+}
+
+.pf-v5-c-check__label {
+    font-size: 0.8rem !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+}
+
+#kc-form-options a {
+    color: #3b82f6 !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+}
+
+/* 6. BOTÃO SIGN IN */
+.pf-v5-c-button.pf-m-primary {
+    background-color: var(--kizuna-red) !important;
+    border-radius: 12px !important;
+    height: 3.8rem !important;
+    width: 100% !important;
+    font-weight: 800 !important;
+    font-size: 1rem !important;
+    color: #ffffff !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none !important;
+    margin-top: 1rem !important;
+    box-shadow: 0 10px 20px -5px rgba(225, 37, 27, 0.4) !important;
+}
+
+.pf-v5-c-button.pf-m-primary:hover {
+    background-color: var(--kizuna-red-hover) !important;
+}
+
+/* 7. RODAPÉ DO CARD */
+.pf-v5-c-login__main-body::after {
+    content: "SECURE INDUSTRIAL ACCESS SYSTEM";
+    display: block !important;
+    margin-top: 1.5rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px solid #f1f5f9 !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    letter-spacing: 1.2px;
+    text-align: center !important;
+}
+
+/* 8. TEXTOS INFORMATIVOS (Esqueci a Senha, etc) */
+#kc-info-wrapper {
+    margin-top: 2rem !important;
+    font-size: 0.9rem !important;
+    color: #64748b !important;
+    text-align: center !important;
+    line-height: 1.6 !important;
+}
+
+/* 9. ALERTS E AVISOS */
+.pf-v5-c-alert {
+    background-color: #fffbeb !important;
+    border: 1.5px solid #fcd34d !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.2rem !important;
+    margin-bottom: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.8rem;
+    box-shadow: none !important;
+}
+
+.pf-v5-c-alert.pf-m-danger, .pf-v5-c-alert.pf-m-error {
+    background-color: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+}
+
+.pf-v5-c-alert.pf-m-success {
+    background-color: #f0fdf4 !important;
+    border-color: #86efac !important;
+}
+
+.pf-v5-c-alert__title {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    margin: 0 !important;
+}
+
+.pf-v5-c-alert__icon {
+    display: none !important; /* Ocultar ícone padrão para visual limpo */
+}
+
+/* 10. CHECKBOX CUSTOMIZADO PARA UPDATE PASSWORD */
+input[type="checkbox"].pf-v5-c-check__input {
+    accent-color: var(--kizuna-red) !important;
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    cursor: pointer !important;
+    margin-right: 0.5rem !important;
+}
+
+/* ESCONDER ELEMENTOS NATIVOS DESNECESSÁRIOS */
+#kc-header, .pf-v5-c-form__label, .pf-v5-c-login__main-header-utilities {
+    display: none !important;
+}

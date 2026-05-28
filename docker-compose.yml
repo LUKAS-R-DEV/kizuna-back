@@ -1,0 +1,310 @@
+# Stack completo KIZUNA (13 serviços — infra + microsserviços + frontend).
+# Projeto Compose único: kizuna (um grupo no Whaler / Docker Desktop)
+# Subir tudo: ./scripts/kizuna-stack-up.sh  — nunca use docker run avulso
+# Serviços: eureka-server, postgres, mongo, rabbitmq, keycloak,
+#   gateway-service, kizuna-core-service, kizuna-iam-service, kizuna-data-service,
+#   kizuna-audit-service, kizuna-notification-service, kizuna-ai-service, frontend
+version: "3.8"
+
+x-kizuna-labels: &kizuna-labels
+  com.kizuna.stack: kizuna
+
+networks:
+  kizuna-network:
+    driver: bridge
+
+services:
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+    image: kizuna_eureka-server:latest
+    container_name: kizuna-eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  postgres:
+    image: postgres:15
+    container_name: kizuna-postgres
+    environment:
+      POSTGRES_DB: kizuna
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  mongo:
+    image: mongo:7
+    container_name: kizuna-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: kizuna-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.4
+    container_name: kizuna-keycloak
+    command:
+      - start-dev
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./themes:/opt/keycloak/themes
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/kizuna
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      # URL pública (porta 80 via frontend nginx) — evita links de e-mail em :8080
+      KC_HOSTNAME_URL: http://localhost
+      KC_HOSTNAME_PORT: "80"
+      KC_HOSTNAME_ADMIN_URL: http://localhost:8081
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+    depends_on:
+      - postgres
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+    image: kizuna_gateway-service:latest
+    container_name: kizuna-gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=default
+    depends_on:
+      - eureka-server
+      - kizuna-iam-service
+      - kizuna-core-service
+      - kizuna-data-service
+      - kizuna-audit-service
+      - kizuna-notification-service
+      - kizuna-ai-service
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  kizuna-core-service:
+    build:
+      context: ./Kizuna-core-service
+    image: kizuna_kizuna-core-service:latest
+    container_name: kizuna-core-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kizuna?currentSchema=core
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+      - KIZUNA_IAM_BASE_URL=http://kizuna-iam-service:8083
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/kizuna-core
+      - MANAGEMENT_HEALTH_MONGO_ENABLED=false
+    depends_on:
+      - eureka-server
+      - postgres
+      - mongo
+      - kizuna-iam-service
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  kizuna-data-service:
+    build:
+      context: ./kizuna-data-service
+    image: kizuna_kizuna-data-service:latest
+    container_name: kizuna-data-service
+    hostname: kizuna-data-service
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_NAME=kizuna-data-service
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/kizuna-data
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/kizuna-data
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+      - KIZUNA_INTEGRATION_BOOTSTRAP_KEY=${KIZUNA_INTEGRATION_BOOTSTRAP_KEY:-}
+    depends_on:
+      - eureka-server
+      - mongo
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  kizuna-iam-service:
+    build:
+      context: ./kizuna-iam-service
+    image: kizuna_kizuna-iam-service:latest
+    container_name: kizuna-iam-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_APPLICATION_NAME=kizuna-iam-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kizuna?currentSchema=iam
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+      - KEYCLOAK_AUTH-SERVER-URL=http://kizuna-keycloak:8080
+      - KEYCLOAK_AUTH_SERVER_URL=http://kizuna-keycloak:8080
+      - KEYCLOAK_PUBLIC_BASE_URL=http://localhost
+      - KEYCLOAK_APP_CLIENT_ID=kizuna-app
+      - KEYCLOAK_POST_LOGIN_REDIRECT=http://localhost/
+      - KEYCLOAK_CLIENT-SECRET=61gSieO2fPwXeCCFrbb5awQ3mGNNPHIw
+    depends_on:
+      - eureka-server
+      - postgres
+      - keycloak
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  kizuna-audit-service:
+    build:
+      context: ./kizuna-audit-service
+    image: kizuna_kizuna-audit-service:latest
+    container_name: kizuna-audit-service
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_APPLICATION_NAME=kizuna-audit-service
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/kizuna-audit
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/kizuna-audit
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+    depends_on:
+      - eureka-server
+      - mongo
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  kizuna-notification-service:
+    build:
+      context: ./kizuna_notification_service
+    image: kizuna_kizuna-notification-service:latest
+    container_name: kizuna-notification-service
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/kizuna-notification
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/kizuna-notification
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+      - KIZUNA_HEALTH_ALERT_ENABLED=${KIZUNA_HEALTH_ALERT_ENABLED:-false}
+      - KIZUNA_HEALTH_ALERT_RECIPIENTS=${KIZUNA_HEALTH_ALERT_RECIPIENTS:-}
+      - KIZUNA_HEALTH_ALERT_FROM=${KIZUNA_HEALTH_ALERT_FROM:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp-relay.brevo.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+    depends_on:
+      - eureka-server
+      - rabbitmq
+      - mongo
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  kizuna-ai-service:
+    build:
+      context: ./kizuna-ai-service
+    image: kizuna_kizuna-ai-service:latest
+    container_name: kizuna-ai-service
+    hostname: kizuna-ai-service
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+    depends_on:
+      - eureka-server
+      - keycloak
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+  frontend:
+    build:
+      context: ./frontend
+    image: kizuna_frontend:latest
+    container_name: kizuna-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway-service
+      - keycloak
+      - kizuna-iam-service
+    networks:
+      - kizuna-network
+    restart: unless-stopped
+    labels:
+      <<: *kizuna-labels
+
+volumes:
+  postgres_data:
+  mongo_data:
+  rabbitmq_data:

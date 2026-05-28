@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: notification-service
+
+# Apenas serviços essenciais
+monitor:
+  services:
+    - name: gateway-service
+      url: http://kizuna-gateway-service:8080/core/actuator/health
+    - name: core-service
+      url: http://kizuna-core-service:8082/core/actuator/health
+    - name: iam-service
+      url: http://kizuna-iam-service:8083/actuator/health
+    - name: data-service
+      url: http://kizuna-data-service:8085/data/actuator/health

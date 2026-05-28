@@ -1,0 +1,38 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: iam-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kizuna?currentSchema=iam
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        default_schema: iam
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/Kizuna
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: "health"
+
+    endpoint:
+      health:
+        show-details: "always"
+
+keycloak:
+  auth-server-url: http://localhost:8081

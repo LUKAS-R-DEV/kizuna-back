@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: kizuna-postgres
+    environment:
+      POSTGRES_DB: kizuna
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:7
+    container_name: kizuna-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: kizuna-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+
+volumes:
+  postgres_data:
+  mongo_data:

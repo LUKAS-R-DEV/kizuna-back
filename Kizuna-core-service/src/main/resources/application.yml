@@ -1,0 +1,7 @@
+
+spring:
+  application:
+    name: core-service
+
+  profiles:
+    active: dev

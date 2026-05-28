@@ -1,0 +1,15 @@
+.env
+.env.dev
+.idea/
+target/
+*.class
+*.log
+.mvn/
+mvnw
+mvnw.cmd
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+frontend-src-sync/
+realm-export*.json

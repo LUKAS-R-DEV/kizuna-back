@@ -1,0 +1,37 @@
+server:
+  port: 8090
+  connection-timeout: 120000
+
+spring:
+  mvc:
+    async:
+      request-timeout: 120000
+  application:
+    name: ai-service
+
+  ai:
+    openai:
+      api-key: ${GROQ_API_KEY}
+      base-url: https://api.groq.com/openai
+      chat:
+        options:
+          model: llama-3.1-8b-instant
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/kizuna-data
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/Kizuna
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

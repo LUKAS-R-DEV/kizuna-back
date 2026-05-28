@@ -1,0 +1,30 @@
+server:
+  port: 8085
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/kizuna-data
+  mongodb:
+    uri: mongodb://mongo:27017/kizuna-data
+  rabbitmq:
+    host: rabbitmq
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+
+kizuna:
+  integration:
+    enabled: true
+    bootstrap-key: ${KIZUNA_INTEGRATION_BOOTSTRAP_KEY:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

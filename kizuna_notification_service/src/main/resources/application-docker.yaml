@@ -1,0 +1,63 @@
+server:
+  port: 8086
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/kizuna-notification
+  mongodb:
+    uri: mongodb://mongo:27017/kizuna-notification
+  rabbitmq:
+    host: rabbitmq
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://kizuna-keycloak:8080/realms/Kizuna
+          jwk-set-uri: http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+  mail:
+    host: ${SMTP_HOST:smtp-relay.brevo.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: ${SMTP_HOST:smtp-relay.brevo.com}
+            checkserveridentity: false
+
+kizuna:
+  health-alert:
+    mail:
+      enabled: ${KIZUNA_HEALTH_ALERT_ENABLED:false}
+      from: ${KIZUNA_HEALTH_ALERT_FROM:}
+      recipients-csv: ${KIZUNA_HEALTH_ALERT_RECIPIENTS:}
+
+# Apenas serviços essenciais (menos carga no notification-service)
+monitor:
+  services:
+    - name: gateway-service
+      url: http://kizuna-gateway-service:8080/core/actuator/health
+    - name: core-service
+      url: http://kizuna-core-service:8082/core/actuator/health
+    - name: iam-service
+      url: http://kizuna-iam-service:8083/actuator/health
+    - name: data-service
+      url: http://kizuna-data-service:8085/data/actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    mail:
+      enabled: false

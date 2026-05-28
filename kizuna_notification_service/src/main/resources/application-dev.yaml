@@ -1,0 +1,63 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: notification-service
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/kizuna-notification
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/Kizuna
+          jwk-set-uri: http://localhost:8081/realms/Kizuna/protocol/openid-connect/certs
+
+  mail:
+    host: ${SMTP_HOST:smtp-relay.brevo.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: ${SMTP_HOST:smtp-relay.brevo.com}
+            checkserveridentity: false
+
+kizuna:
+  health-alert:
+    mail:
+      enabled: ${KIZUNA_HEALTH_ALERT_ENABLED:false}
+      from: ${KIZUNA_HEALTH_ALERT_FROM:}
+      recipients-csv: ${KIZUNA_HEALTH_ALERT_RECIPIENTS:}
+
+# Apenas serviços essenciais (IntelliJ / dev local)
+monitor:
+  services:
+    - name: gateway-service
+      url: http://localhost:8080/core/actuator/health
+    - name: core-service
+      url: http://localhost:8082/core/actuator/health
+    - name: iam-service
+      url: http://localhost:8083/actuator/health
+    - name: data-service
+      url: http://localhost:8085/data/actuator/health
+
+management:
+  health:
+    mail:
+      enabled: false

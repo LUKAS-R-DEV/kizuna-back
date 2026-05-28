@@ -1,0 +1,7 @@
+
+spring:
+  application:
+    name: iam-service
+
+  profiles:
+    active: dev

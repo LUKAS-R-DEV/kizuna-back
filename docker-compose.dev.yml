@@ -1,0 +1,94 @@
+# Infra mínima para desenvolvimento local (IntelliJ).
+# Projeto Compose: kizuna_dev (.env.dev)
+# Subir: ./scripts/kizuna-dev-infra-up.sh
+# Parar o stack kizuna antes (mesmas portas no host).
+version: "3.8"
+
+networks:
+  kizuna-dev-network:
+    driver: bridge
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: kizuna-dev-postgres
+    environment:
+      POSTGRES_DB: kizuna
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - kizuna-dev-network
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    container_name: kizuna-dev-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data_dev:/data/db
+    networks:
+      - kizuna-dev-network
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: kizuna-dev-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data_dev:/var/lib/rabbitmq
+    networks:
+      - kizuna-dev-network
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.4
+    container_name: kizuna-dev-keycloak
+    command:
+      - start-dev
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./themes:/opt/keycloak/themes
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/kizuna
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HOSTNAME_URL: http://localhost
+      KC_HOSTNAME_ADMIN_URL: http://localhost:8081
+      KC_PROXY_HEADERS: xforwarded
+    depends_on:
+      - postgres
+    networks:
+      - kizuna-dev-network
+    restart: unless-stopped
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+    image: kizuna_dev_eureka-server:latest
+    container_name: kizuna-dev-eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - kizuna-dev-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_dev:
+  mongo_data_dev:
+  rabbitmq_data_dev:

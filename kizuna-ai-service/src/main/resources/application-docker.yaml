@@ -1,0 +1,25 @@
+server:
+  port: 8090
+
+spring:
+  ai:
+    openai:
+      api-key: ${GROQ_API_KEY}
+      base-url: https://api.groq.com/openai
+      chat:
+        options:
+          model: llama-3.1-8b-instant
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://kizuna-keycloak:8080/realms/Kizuna/protocol/openid-connect/certs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
